@@ -15,19 +15,13 @@
 # limitations under the License.
 #
 import webapp2
-import jinja2
 
-JINJA_ENVIRONMENT = jinja2.Environment(
-	loader=jinja2.FileSystemLoader(os.path.dirname(__file__)),
-	extensions=['jinja2.ext.autoescape'],
-	autoescape=True)
+INDEX = "<html><head><title>Alo Box Deneme</title></head><body><h1>Helooooo</h1></body></html>"
+
 
 class MainHandler(webapp2.RequestHandler):
     def get(self):
-		template_values = {}
-
-		template = JINJA_ENVIRONMENT.get_template('index.html')
-		self.response.write(template.render(template_values))
+		self.response.write(INDEX)
 
 app = webapp2.WSGIApplication([
     ('/', MainHandler)
