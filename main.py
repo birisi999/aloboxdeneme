@@ -68,6 +68,7 @@ class MainHandler(BaseHandler):
 
 class Signup(BaseHandler):
     def post(self):
+			
 		ac_kod = str(uuid.uuid4())
 		passw = x = md5.new(cgi.escape(self.request.get('password'))).hexdigest()
 		user = User(name = cgi.escape(self.request.get('firstname')),
@@ -90,6 +91,7 @@ class Signup(BaseHandler):
 		
 class Aktivasyon(BaseHandler):
     def get(self):
+			
 		act_key = cgi.escape(self.request.get('key'))
 		qry = User.query(User.activ_key == act_key)
 		for usr in qry:
@@ -103,7 +105,6 @@ class Aktivasyon(BaseHandler):
 		
 class Login(BaseHandler):
     def post(self):
-		self.response.out.write(self.request.host_url)
 		mail = cgi.escape(self.request.get('mail'))		
 		passw = x = md5.new(cgi.escape(self.request.get('password'))).hexdigest()
 		
@@ -122,6 +123,10 @@ class Login(BaseHandler):
 		
 class Dashboard(BaseHandler):
     def get(self):
+	
+		if self.session.get('userid') == None :
+			self.redirect('/')
+			
 		file = open("dashboard.html");
 		dash = file.read()
 		tableline = "";
@@ -147,7 +152,11 @@ class Logout(BaseHandler):
 		self.redirect('/')
 		
 class FileUpload(BaseHandler):
-	def post(self):
+	def post(self):	
+	
+		if self.session.get('userid') == None :
+			self.redirect('/')
+			
 		message  = "";
 		fileitem = self.request.POST["filedata"]
 		if fileitem.filename:
@@ -177,6 +186,10 @@ class FileUpload(BaseHandler):
 			
 class Download(BaseHandler):
 	def get(self):
+	
+		if self.session.get('userid') == None :
+			self.redirect('/')
+			
 		if self.request.GET['id'] :
 			qry = FileList.query(FileList.userid == str(self.session['userid']), FileList.deleted == False, FileList.c_position == self.request.GET['id'] )
 			for fl in qry :
