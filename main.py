@@ -5,6 +5,7 @@ import logging
 import os
 import md5
 import datetime
+import math
 
 
 from google.appengine.api import app_identity
@@ -22,6 +23,8 @@ cgitb.enable()
 
 MAIL_STR = 'Sayın, {0}<br>Hesabınızı Aktifleştirmek için <a href="{1}/Activasyon?key={2}" >Buraya Tıklayınız</a>'
 FILETABLE_STR = '<tr><td>{0}</td><td>{1}</td><td>{2}</td><td><a href="/download?id={3}">İndir</a></td></tr>'
+FILEPAGER_STR = '<tr><td colspan="4" align="center"><a href="/dashboard?p=0">İlk Sayfa</a> | <a href="/dashboard?p={0}">Önceki</a> | '
+FILEPAGER_STR = FILEPAGER_STR+ '<a href="/dashboard?p={1}">Sonraki</a> | <a href="/dashboard?p={2}">Son Sayfa</a></td></tr>'
 
 my_default_retry_params = gcs.RetryParams(initial_delay=0.2,max_delay=5.0,backoff_factor=2,max_retry_period=15)
 										  
@@ -107,7 +110,7 @@ class Login(BaseHandler):
     def post(self):
 		mail = cgi.escape(self.request.get('mail'))		
 		passw = x = md5.new(cgi.escape(self.request.get('password'))).hexdigest()
-		
+
 		qry = User.query(User.mail == mail, User.password == passw, User.activ == True)
 		login = False		
 		for usr in qry:
@@ -129,6 +132,12 @@ class Dashboard(BaseHandler):
 			
 		file = open("dashboard.html");
 		dash = file.read()
+		cur_page = int('0')
+		page_first  = 0
+		if self.request.get('p') != '':
+			cur_page = int(self.request.get('p'))
+		page_first = cur_page  * 5
+		page_last = page_first + 5
 		tableline = "";
 		nofile = True
 		qry = FileList.query(FileList.userid == str(self.session['userid']), FileList.deleted == False)
@@ -136,12 +145,15 @@ class Dashboard(BaseHandler):
 		fl_size = 0;
 		fl_count = 0;
 		for fl in qry:
-			fl_count = fl_count + 1
 			fl_size = fl_size + fl.size
-			tableline = tableline + FILETABLE_STR.format(fl.name, str(fl.size / 1024) + ' KB', fl.loadtime.strftime("%d.%m.%y %H:%M"), fl.c_position)
-			nofile = False
+			if fl_count >= page_first and fl_count < page_last :
+				tableline = tableline + FILETABLE_STR.format(fl.name, str(fl.size / 1024) + ' KB', fl.loadtime.strftime("%d.%m.%y %H:%M"), fl.c_position)
+			nofile = False			
+			fl_count = fl_count + 1
 		if nofile :
 			tableline = '<tr><td colspan="4">Hiç Dosya Bulunamadı</td></tr>'
+		else :
+			tableline = tableline + FILEPAGER_STR.format(max(0,cur_page - 1), str(int(min(math.floor(fl_count / 5), cur_page+ 1))),str(int(math.floor(fl_count / 5)))) 
 		#dash.format(self.session.get('username'),'','')
 		self.response.out.write(dash.format(self.session.get('username'),fl_count,str(fl_size / 1024) + ' KB', tableline))
 		
