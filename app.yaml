@@ -6,12 +6,13 @@ threadsafe: yes
 
 handlers:
 - url: /favicon\.ico
-  static_files: favicon.ico
-  upload: favicon\.ico
+  static_files: favicon.ico, index.html,signup.html,activasyon.html,dashboard.html,login.html
+  upload: favicon\.ico, index\.html,signup\.html,activasyon\.html,dashboard\.html,login\.html
 
 - url: .*
   script: main.app
 
 libraries:
 - name: webapp2
-  version: "2.5.2"
+  version: latest
+  
