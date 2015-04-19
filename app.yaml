@@ -6,8 +6,9 @@ threadsafe: yes
 
 handlers:
 - url: /favicon\.ico
-  static_files: favicon.ico, index.html,signup.html,activasyon.html,dashboard.html,login.html
+  static_files: favicon.ico, index.html,signup.html,activasyon.html,dashboard.html,login.html, cloudstorage/.*
   upload: favicon\.ico, index\.html,signup\.html,activasyon\.html,dashboard\.html,login\.html
+  
 
 - url: .*
   script: main.app
